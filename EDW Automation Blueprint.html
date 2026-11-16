@@ -1,0 +1,1335 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>EDW Automation Blueprint</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one long guided scroll. Plain-English words first, then every file, then one run followed end to end, then the variations. */
+:root{
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#EDF0F4; --surface:#F8F9FB; --surface2:#E1E6ED; --fg:#101C28; --muted:#4F5E70; --line:#C7D0DB;
+  --accent:#2A4BF0; --on-accent:#FFFFFF;
+  --ok:#0B7F56; --warn:#9A6411; --bad:#BE2F28;
+  --code-bg:#12202D; --code-fg:#DCE6F2; --code-dim:#7F93A8;
+  --syn-k:#8FA5FF; --syn-s:#7FD9B3; --syn-c:#6F8398; --syn-f:#F0C674; --syn-d:#F59E8E;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C141C; --surface:#131E29; --surface2:#1B2A38; --fg:#E4EBF3; --muted:#93A6BA; --line:#26394A;
+    --accent:#8097FF; --on-accent:#0C141C;
+    --ok:#3FD6A0; --warn:#E3B04B; --bad:#FF7A70;
+    --code-bg:#09111A; --code-fg:#DCE6F2; --code-dim:#7F93A8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C141C; --surface:#131E29; --surface2:#1B2A38; --fg:#E4EBF3; --muted:#93A6BA; --line:#26394A;
+  --accent:#8097FF; --on-accent:#0C141C;
+  --ok:#3FD6A0; --warn:#E3B04B; --bad:#FF7A70;
+  --code-bg:#09111A; --code-fg:#DCE6F2; --code-dim:#7F93A8;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg); color:var(--fg); font-family:var(--font-body); font-size:16px; line-height:1.6;
+  padding-block:24px 72px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));
+  padding-right:max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap{max-width:1040px; margin:0 auto}
+h1,h2,h3{font-family:var(--font-display); text-wrap:balance; margin:0; line-height:1.08; letter-spacing:-0.01em}
+p{margin:0}
+code,.mono{font-family:var(--font-mono)}
+a{color:var(--accent)}
+button,select,input{font:inherit; color:inherit}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.hero{padding-block:28px 40px}
+.eyebrow{font-family:var(--font-mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+.hero h1{font-size:clamp(2.6rem, 8vw, 5.6rem); font-weight:800; margin-top:14px; max-width:12ch}
+.hero h1 em{font-style:normal; color:var(--accent)}
+.hero .lede{max-width:58ch; margin-top:20px; font-size:1.125rem; color:var(--muted)}
+.toc{display:flex; flex-wrap:wrap; gap:8px 18px; margin-top:26px; font-size:.95rem}
+.flow{list-style:none; padding:0; margin:44px 0 0; display:grid; grid-template-columns:repeat(4,1fr)}
+.flow li{position:relative; padding:0 18px 0 0; min-width:0}
+.flow li::before{content:""; position:absolute; top:8px; left:18px; right:0; height:2px; background:var(--line); transition:background .5s}
+.flow li:last-child::before{display:none}
+.flow li.done::before{background:var(--accent)}
+.flow .dot{display:block; width:18px; height:18px; border-radius:50%; border:2px solid var(--line); background:var(--bg); position:relative; z-index:1; transition:background .3s, border-color .3s}
+.flow li.done .dot, .flow li.on .dot{border-color:var(--accent)}
+.flow li.on .dot{background:var(--accent); animation:ring 1.1s ease-out infinite}
+@keyframes ring{0%{box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent)} 100%{box-shadow:0 0 0 12px transparent}}
+.flow h3{font-size:1.15rem; margin-top:16px}
+.flow p{font-size:.9rem; color:var(--muted); margin-top:6px}
+
+section{padding-block:56px 8px; border-top:1px solid var(--line); margin-top:40px; scroll-margin-top:12px}
+.sec-head{display:grid; gap:12px; max-width:64ch; margin-bottom:28px}
+.sec-head h2{font-size:clamp(1.7rem, 4.5vw, 2.6rem); font-weight:700}
+.sec-head p{color:var(--muted)}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:20px; min-width:0}
+.lbl{font-family:var(--font-mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+.btn{background:var(--accent); color:var(--on-accent); border:0; border-radius:6px; padding:9px 16px; font-weight:600; cursor:pointer}
+.btn[disabled]{opacity:.45; cursor:not-allowed}
+.btn.ghost{background:transparent; color:var(--fg); border:1px solid var(--line)}
+.btn.ghost:hover:not([disabled]){border-color:var(--accent)}
+.btn:hover:not([disabled]){filter:brightness(1.08)}
+.ctl{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:16px}
+.ctl .note{color:var(--muted); font-size:.9rem}
+.callout{border-left:3px solid var(--warn); padding:4px 0 4px 14px; max-width:68ch; margin-top:22px}
+.callout strong{display:block; margin-bottom:2px}
+
+.code{margin:0; background:var(--code-bg); border-radius:8px; overflow:hidden; min-width:0}
+.code figcaption{font-family:var(--font-mono); font-size:12px; color:var(--code-dim); padding:9px 14px; border-bottom:1px solid color-mix(in srgb, var(--code-dim) 28%, transparent)}
+.code pre{margin:0; padding:14px; overflow-x:auto; font-family:var(--font-mono); font-size:13px; line-height:1.65; color:var(--code-fg); tab-size:4}
+.k{color:var(--syn-k)} .s{color:var(--syn-s)} .c{color:var(--syn-c); font-style:italic} .f{color:var(--syn-f)} .d{color:var(--syn-d)}
+
+/* glossary */
+.gloss{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 36px; margin:0}
+.gloss div{display:grid; grid-template-columns:minmax(0,9.5em) minmax(0,1fr); gap:6px 16px; padding:14px 0; border-bottom:1px solid var(--line)}
+.gloss dt{font-family:var(--font-display); font-weight:700; font-size:1.05rem; line-height:1.2}
+.gloss dt small{display:block; font-family:var(--font-mono); font-weight:400; font-size:12px; color:var(--muted); margin-top:3px; overflow-wrap:anywhere}
+.gloss dd{margin:0; color:var(--muted); font-size:.95rem}
+.gloss dd em{font-style:normal; font-family:var(--font-mono); font-size:.85rem; color:var(--fg)}
+
+/* file tree */
+.stagebar{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px}
+.stagebar button{background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:5px 11px; cursor:pointer; font-size:.9rem}
+.stagebar button[aria-pressed="true"]{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
+.stagehint{min-height:3.4em; color:var(--muted); font-size:.95rem; max-width:70ch; margin-bottom:16px}
+.stagehint strong{color:var(--fg)}
+.repo{display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:20px; align-items:start}
+.tree{display:grid; gap:1px; min-width:0}
+.tree button{display:grid; grid-template-columns:24px minmax(0,1fr); gap:10px; align-items:start; text-align:left; background:transparent; border:1px solid transparent; border-radius:6px; padding:7px 10px; cursor:pointer; transition:opacity .25s}
+.tree button:hover{background:var(--surface2)}
+.tree button[aria-pressed="true"]{background:var(--surface); border-color:var(--accent)}
+.tree button.dim{opacity:.3}
+.tree .stg{font-family:var(--font-mono); font-size:11.5px; width:22px; height:22px; border-radius:5px; background:var(--surface2); display:grid; place-items:center; color:var(--muted)}
+.tree button[aria-pressed="true"] .stg, .tree button.hit .stg{background:var(--accent); color:var(--on-accent)}
+.tree .txt{display:grid; min-width:0}
+.tree .path{font-family:var(--font-mono); font-size:13.5px; overflow-wrap:anywhere}
+.tree .path.dir{font-weight:500}
+.tree .plain{font-size:12.5px; color:var(--muted); line-height:1.35}
+.detail{position:sticky; top:calc(env(safe-area-inset-top, 0px) + 16px); display:grid; gap:14px; max-height:calc(100vh - 40px); overflow:auto}
+.detail h3{font-size:1.4rem}
+.detail .where{font-family:var(--font-mono); font-size:12.5px; color:var(--muted); overflow-wrap:anywhere}
+.detail .rule{border-left:3px solid var(--accent); padding-left:12px; font-size:.95rem}
+.detail.swap{animation:swap .35s ease}
+@keyframes swap{from{opacity:.2; transform:translateY(6px)} to{opacity:1; transform:none}}
+
+/* worked run */
+.dots{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:16px}
+.dots button{width:34px; height:34px; border-radius:50%; border:2px solid var(--line); background:var(--bg); cursor:pointer; font-family:var(--font-mono); font-size:13px; transition:background .25s, border-color .25s}
+.dots button.past{border-color:var(--accent)}
+.dots button.now{background:var(--accent); color:var(--on-accent); border-color:var(--accent); animation:ring 1.2s ease-out infinite}
+.run{display:grid; grid-template-columns:minmax(0,6fr) minmax(0,5fr); gap:22px; align-items:start}
+.run h3{font-size:1.5rem; margin:6px 0 10px}
+.files{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
+.files span{font-family:var(--font-mono); font-size:12px; border:1px solid var(--accent); color:var(--accent); border-radius:5px; padding:1px 8px}
+.run .say{max-width:60ch; margin-bottom:14px}
+.boxes{display:grid; gap:14px}
+.box{background:var(--bg); border:1px dashed var(--line); border-radius:8px; padding:12px; font-family:var(--font-mono); font-size:12.5px; min-height:5.5em; overflow-wrap:anywhere}
+.box div{animation:chipin .35s ease backwards; padding:1px 0}
+.box .empty{color:var(--muted)}
+.box .ok{color:var(--ok)}
+.box .bad{color:var(--bad)}
+@keyframes chipin{from{opacity:0; transform:translateX(-8px)}}
+
+/* where does it go */
+.goes{display:grid; grid-template-columns:minmax(0,5fr) minmax(0,6fr); gap:20px; align-items:start}
+.goes .field{max-width:none}
+.answer{display:grid; gap:12px}
+.answer h3{font-size:1.25rem}
+.answer ul{margin:0; padding-left:20px; color:var(--muted); display:grid; gap:4px}
+
+/* lookup */
+.lookup{display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1.35fr); gap:10px; align-items:stretch}
+.lookup .arr{align-self:center; color:var(--muted); font-family:var(--font-mono); font-size:20px}
+.col{display:grid; gap:6px; align-content:start; min-width:0}
+.row{display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); font-family:var(--font-mono); font-size:12.5px; text-align:left; cursor:pointer; min-width:0; overflow-wrap:anywhere; transition:background .25s, border-color .25s}
+.row.static{cursor:default}
+.row.hot{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 16%, var(--bg))}
+.row .to{color:var(--muted)}
+.fn{opacity:.35; transition:opacity .3s}
+.fn.hot{opacity:1}
+.three{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-top:24px}
+
+/* pipelines */
+.tabs{display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--surface)}
+.tabs button{background:transparent; border:0; padding:9px 16px; cursor:pointer; font-weight:500}
+.tabs button[aria-pressed="true"]{background:var(--accent); color:var(--on-accent)}
+.pipes{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:28px; margin-top:20px; align-items:start}
+.chips{list-style:none; padding:0; margin:0; display:grid; gap:6px; counter-reset:c}
+.chips li{counter-increment:c; display:flex; gap:10px; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:var(--surface); font-family:var(--font-mono); font-size:13px; animation:chipin .4s ease backwards}
+.chips li::before{content:counter(c); color:var(--muted); width:1.4em; text-align:right; font-variant-numeric:tabular-nums}
+.chips li.new{border-color:var(--accent)}
+.chips li .badge{margin-left:auto; font-size:11px; color:var(--accent); font-family:var(--font-body); font-weight:600}
+.grid50{display:grid; grid-template-columns:repeat(10,1fr); gap:6px; margin-top:12px}
+.grid50 i{aspect-ratio:1; border-radius:4px; background:var(--accent); transition:opacity .4s, transform .4s}
+.grid50 i.file{background:var(--warn)}
+.grid50 i.dim{opacity:.16; transform:scale(.8)}
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; font-size:.9rem; color:var(--muted)}
+.legend b{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; background:var(--accent)}
+.legend b.file{background:var(--warn)}
+
+/* simulator */
+.sim{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:start}
+.form{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+.field{display:grid; gap:5px; min-width:0}
+.field.wide{grid-column:1 / -1}
+select,input[type="text"]{width:100%; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px 10px; font-family:var(--font-mono); font-size:13px}
+.cmd{margin-top:14px}
+.steps{list-style:none; padding:0; margin:0; display:grid; gap:6px}
+.steps li{display:grid; grid-template-columns:2em minmax(0,1fr) auto; gap:8px; align-items:center; padding:8px 12px; border:1px solid var(--line); border-radius:6px; background:var(--surface); font-family:var(--font-mono); font-size:13px; transition:background .25s, border-color .25s, opacity .25s}
+.steps .n{color:var(--muted); text-align:right; font-variant-numeric:tabular-nums}
+.steps .nm{overflow-wrap:anywhere}
+.pill{font-family:var(--font-body); font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:99px; border:1px solid var(--line); color:var(--muted); white-space:nowrap}
+.steps li.skipped{opacity:.5; border-style:dashed}
+.steps li.notrun{opacity:.45}
+.steps li.running{border-color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, var(--surface))}
+.steps li.running .pill{color:var(--accent); border-color:var(--accent); animation:blink .9s ease infinite}
+.steps li.passed .pill{color:var(--ok); border-color:var(--ok)}
+.steps li.failed{border-color:var(--bad)}
+.steps li.failed .pill{color:var(--bad); border-color:var(--bad)}
+@keyframes blink{50%{opacity:.4}}
+.state{margin-top:14px; font-family:var(--font-mono); font-size:12.5px; background:var(--bg); border:1px dashed var(--line); border-radius:8px; padding:12px; min-height:3.2em; overflow-wrap:anywhere}
+.state div{animation:chipin .35s ease backwards}
+.msg{margin-top:10px; font-size:.92rem; color:var(--warn)}
+
+/* config table */
+.cfgtbl{width:100%; border-collapse:collapse; font-size:13px}
+.cfgwrap{overflow-x:auto; margin-top:16px}
+.cfgtbl th{font-family:var(--font-mono); font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); font-weight:500}
+.cfgtbl td{padding:9px 10px; border-bottom:1px solid var(--line); font-family:var(--font-mono); vertical-align:top}
+.cfgtbl tr.flash td{animation:flash 1s ease}
+@keyframes flash{from{background:color-mix(in srgb, var(--accent) 22%, transparent)} to{background:transparent}}
+.src{font-family:var(--font-body); font-size:11.5px; font-weight:600; padding:2px 9px; border-radius:99px; border:1px solid currentColor; white-space:nowrap}
+.src.env{color:var(--accent)} .src.pipe{color:var(--ok)} .src.ds{color:var(--warn)} .src.cli{color:var(--bad)} .src.der{color:var(--muted)}
+.layers{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:18px; font-size:.9rem; color:var(--muted)}
+.layers .arrow{font-family:var(--font-mono)}
+.check{display:flex; gap:8px; align-items:center; font-size:.95rem}
+.check input{width:18px; height:18px; accent-color:var(--accent)}
+
+/* build order */
+.bar{height:6px; background:var(--surface2); border-radius:99px; overflow:hidden; margin:6px 0 20px}
+.bar span{display:block; height:100%; width:0; background:var(--accent); transition:width .45s ease}
+.build{list-style:none; padding:0; margin:0; display:grid; gap:8px; counter-reset:b}
+.build li{counter-increment:b}
+.build label{display:grid; grid-template-columns:2em 22px minmax(0,1fr); gap:12px; align-items:start; padding:12px 14px; border:1px solid var(--line); border-radius:8px; background:var(--surface); cursor:pointer}
+.build label::before{content:counter(b); font-family:var(--font-mono); color:var(--muted); text-align:right; padding-top:1px}
+.build input{width:18px; height:18px; margin-top:3px; accent-color:var(--accent)}
+.build li.dn label{background:color-mix(in srgb, var(--ok) 9%, var(--surface))}
+.build li.dn strong{text-decoration:line-through; text-decoration-color:var(--muted)}
+.build .t{display:block; color:var(--muted); font-size:.92rem; margin-top:2px}
+.build .t b{color:var(--fg); font-weight:600}
+.open{margin-top:36px; display:grid; gap:10px}
+.open h3{font-size:1.2rem}
+.open ul{margin:0; padding-left:20px; color:var(--muted); display:grid; gap:6px}
+
+@media (max-width:900px){
+  .repo,.sim,.pipes,.run,.goes{grid-template-columns:minmax(0,1fr)}
+  .detail{position:static; max-height:none}
+  .lookup{grid-template-columns:minmax(0,1fr)}
+  .lookup .arr{transform:rotate(90deg); justify-self:center}
+  .three{grid-template-columns:minmax(0,1fr)}
+  .gloss{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .flow{grid-template-columns:minmax(0,1fr)}
+  .flow li{padding:0 0 24px 34px}
+  .flow li::before{top:20px; bottom:0; left:8px; right:auto; width:2px; height:auto}
+  .flow .dot{position:absolute; left:0; top:0}
+  .flow h3{margin-top:0}
+  .form{grid-template-columns:minmax(0,1fr)}
+  .gloss div{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none !important; transition:none !important}
+}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Airflow · Snowflake · Teradata · S3</div>
+  <h1>Config in. <em>Evidence out.</em></h1>
+  <p class="lede">How the test automation repo is put together, in plain words. You will see every file, what goes in it, what to build first, and what happens from the moment you type the command to the moment the report is ready.</p>
+  <nav class="toc" aria-label="On this page">
+    <a href="#words">The words</a><a href="#files">Every file</a><a href="#run">One run</a><a href="#goes">Where things go</a><a href="#lookup">Lookup list</a><a href="#variants">Different tables</a><a href="#config">Settings merge</a><a href="#build">Build order</a>
+  </nav>
+  <ol class="flow" id="flow">
+    <li><span class="dot"></span><h3>Settings files</h3><p>Text files that say which table, which environment and which tasks.</p></li>
+    <li><span class="dot"></span><h3>Task runner</h3><p>Reads the settings and takes the task names one at a time.</p></li>
+    <li><span class="dot"></span><h3>Lookup list</h3><p>Finds the code that matches each task name, then runs it.</p></li>
+    <li><span class="dot"></span><h3>Report</h3><p>Every task attaches its proof, so the team can open one page and see what happened.</p></li>
+  </ol>
+</header>
+
+<section id="words">
+  <div class="sec-head">
+    <div class="eyebrow">Start here</div>
+    <h2>The words, in plain English</h2>
+    <p>The repo uses a few technical names. Each one is a simple idea. Keep this list in mind and the rest of the page will read easily.</p>
+  </div>
+  <dl class="gloss" id="gloss"></dl>
+</section>
+
+<section id="files">
+  <div class="sec-head">
+    <div class="eyebrow">The repo</div>
+    <h2>Every file, and what goes in it</h2>
+    <p>This is the whole folder, including <span class="mono">registry.py</span>. The small number beside each file is the build stage when you write it. Pick a stage to see only those files, or click any file to see what it does and an example of its content.</p>
+  </div>
+  <div class="stagebar" id="stagebar" role="group" aria-label="Build stage"></div>
+  <p class="stagehint" id="stagehint"></p>
+  <div class="repo">
+    <div class="tree" id="tree" role="group" aria-label="Repository files"></div>
+    <div class="panel detail" id="detail" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="run">
+  <div class="sec-head">
+    <div class="eyebrow">How it behaves</div>
+    <h2>Follow one run from start to finish</h2>
+    <p>Here is a real example: testing the <span class="mono">orders</span> table in QAT. Step through the ten moments. On the right you can see what the backpack holds and what proof has been collected so far.</p>
+  </div>
+  <div class="panel">
+    <div class="dots" id="dots" role="group" aria-label="Moments in a run"></div>
+    <div class="run">
+      <div>
+        <div class="lbl" id="momLbl"></div>
+        <h3 id="momTitle"></h3>
+        <div class="files" id="momFiles"></div>
+        <p class="say" id="momSay"></p>
+        <figure class="code"><figcaption id="momCap">What it looks like</figcaption><pre><code id="momCode"></code></pre></figure>
+      </div>
+      <div class="boxes">
+        <div><div class="lbl" style="margin-bottom:6px">The backpack</div><div class="box" id="bagBox"></div></div>
+        <div><div class="lbl" style="margin-bottom:6px">Proof collected for the report</div><div class="box" id="evBox"></div></div>
+      </div>
+    </div>
+    <div class="ctl">
+      <button class="btn ghost" id="prevM" type="button">Back</button>
+      <button class="btn" id="nextM" type="button">Next</button>
+      <button class="btn ghost" id="playM" type="button">Play</button>
+    </div>
+  </div>
+</section>
+
+<section id="goes">
+  <div class="sec-head">
+    <div class="eyebrow">Day-to-day use</div>
+    <h2>I want to do this. Where does it go?</h2>
+    <p>Once the repo exists, most changes touch only one or two files. Choose what you want to do.</p>
+  </div>
+  <div class="goes">
+    <div class="field"><label class="lbl" for="selGoes">I want to</label><select id="selGoes"></select></div>
+    <div class="panel answer" id="goesAns" aria-live="polite"></div>
+  </div>
+</section>
+
+<section id="lookup">
+  <div class="sec-head">
+    <div class="eyebrow">The lookup list</div>
+    <h2>How a task name finds its code</h2>
+    <p>The settings only contain names such as <span class="mono">trigger_dag</span>. The lookup list, which lives in <span class="mono">steps/registry.py</span>, pairs every name with the function that does the work. Click a name to follow one lookup, or let it play.</p>
+  </div>
+  <div class="panel">
+    <div class="lookup">
+      <div class="col"><div class="lbl">1 · Name in the settings</div><div id="yamlCol" class="col"></div></div>
+      <div class="arr">→</div>
+      <div class="col"><div class="lbl">2 · Lookup list (STEPS)</div><div id="regCol" class="col"></div></div>
+      <div class="arr">→</div>
+      <div class="col"><div class="lbl">3 · Code that runs</div>
+        <figure class="code fn" id="fnBox"><figcaption id="fnCap">steps/dag_steps.py</figcaption><pre><code id="fnCode"></code></pre></figure>
+      </div>
+    </div>
+    <div class="ctl">
+      <button class="btn ghost" id="playBtn" type="button">Pause</button>
+      <span class="note" id="lookupNote"></span>
+    </div>
+  </div>
+  <div class="three">
+    <figure class="code" data-snip="registry" data-lang="py"><figcaption>steps/registry.py (the whole file)</figcaption><pre><code></code></pre></figure>
+    <figure class="code" data-snip="stepsinit" data-lang="py"><figcaption>steps/__init__.py</figcaption><pre><code></code></pre></figure>
+    <figure class="code" data-snip="dagsteps" data-lang="py"><figcaption>steps/dag_steps.py (a task file)</figcaption><pre><code></code></pre></figure>
+  </div>
+  <div class="callout">
+    <strong>The one thing beginners miss</strong>
+    <p>A task only gets onto the lookup list when its file is imported, because that is when its <span class="mono">@step</span> line runs. That is why <span class="mono">steps/__init__.py</span> imports every task file. If you add a new task file and forget the import, its names will be reported as unknown.</p>
+  </div>
+</section>
+
+<section id="variants">
+  <div class="sec-head">
+    <div class="eyebrow">Different tables</div>
+    <h2>Different tasks for different tables, and starting in the middle</h2>
+    <p>About 50 tables, two kinds of flow. Forty tables share the standard task list. Ten file-based tables add two tasks at the front. Each table names its list and inherits the rest. A table with unusual needs can also carry its own list.</p>
+  </div>
+  <div class="tabs" role="group" aria-label="Task list">
+    <button type="button" data-pipe="standard" aria-pressed="true">standard</button>
+    <button type="button" data-pipe="file_based" aria-pressed="false">file_based</button>
+  </div>
+  <div class="pipes">
+    <div>
+      <div class="lbl">Tasks in this list, in order</div>
+      <ol class="chips" id="chips" style="margin-top:10px"></ol>
+    </div>
+    <div>
+      <div class="lbl">All 50 tables</div>
+      <div class="grid50" id="grid50" aria-hidden="true"></div>
+      <div class="legend"><span><b></b>standard · 40 tables</span><span><b class="file"></b>file-based · 10 tables</span></div>
+    </div>
+  </div>
+
+  <div class="sec-head" style="margin-top:44px">
+    <h2 style="font-size:1.6rem">Try starting from a later task</h2>
+    <p>Pick a table and a starting task. Earlier tasks are skipped. If you skip <span class="mono">trigger_dag</span> but still need <span class="mono">monitor_dag</span>, you must pass the run id, because the note that the trigger task would have left in the backpack does not exist. This is a simulation with example values.</p>
+  </div>
+  <div class="sim">
+    <div class="panel">
+      <div class="form">
+        <div class="field"><label class="lbl" for="selDs">Table</label><select id="selDs"></select></div>
+        <div class="field"><label class="lbl" for="selEnv">Environment</label>
+          <select id="selEnv"><option value="qat">qat</option><option value="uat">uat</option></select></div>
+        <div class="field"><label class="lbl" for="selFrom">Start from task</label><select id="selFrom"></select></div>
+        <div class="field"><label class="lbl" for="selFail">Make a task fail</label><select id="selFail"></select></div>
+        <div class="field wide" id="runIdField" hidden><label class="lbl" for="runId">Run id of the existing DAG run</label>
+          <input type="text" id="runId" value="manual__2026-10-20T21:30:00" autocomplete="off" spellcheck="false"></div>
+      </div>
+      <figure class="code cmd"><figcaption>Command</figcaption><pre><code id="cmdOut"></code></pre></figure>
+      <div class="ctl">
+        <button class="btn" id="runBtn" type="button">Run</button>
+        <button class="btn ghost" id="resetBtn" type="button">Reset</button>
+      </div>
+      <p class="msg" id="runMsg" hidden></p>
+    </div>
+    <div>
+      <ol class="steps" id="stepList"></ol>
+      <div class="lbl" style="margin-top:16px">Notes in the backpack after the run</div>
+      <div class="state" id="stateBox"><span style="color:var(--muted)">Empty until tasks write to it.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="config">
+  <div class="sec-head">
+    <div class="eyebrow">Settings</div>
+    <h2>How the settings are put together for each run</h2>
+    <p>Four sources are merged in a fixed order and later ones win. Change the environment or the table and watch which values move and where each one came from.</p>
+  </div>
+  <div class="panel">
+    <div class="form" style="grid-template-columns:repeat(3,minmax(0,1fr))">
+      <div class="field"><label class="lbl" for="cfgEnv">--env</label>
+        <select id="cfgEnv"><option value="qat">qat</option><option value="uat">uat</option></select></div>
+      <div class="field"><label class="lbl" for="cfgDs">--dataset</label><select id="cfgDs"></select></div>
+      <div class="field"><span class="lbl">--from-step</span>
+        <label class="check"><input type="checkbox" id="cfgFrom"> validate_schema_staging</label></div>
+    </div>
+    <div class="layers" aria-label="Merge order">
+      <span class="src env">env file</span><span class="arrow">→</span>
+      <span class="src pipe">task list</span><span class="arrow">→</span>
+      <span class="src ds">table entry</span><span class="arrow">→</span>
+      <span class="src cli">command flag</span><span>later sources win</span>
+    </div>
+    <div class="cfgwrap">
+      <table class="cfgtbl">
+        <thead><tr><th>Setting</th><th>Value used</th><th>Comes from</th></tr></thead>
+        <tbody id="cfgBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <div class="sec-head">
+    <div class="eyebrow">What to define first</div>
+    <h2>Seven stages, each one runnable</h2>
+    <p>Build in this order. After each stage there is a simple check you can run, so you always know the foundation is sound before you add the next layer. Tick stages as you finish them. Ticks stay in this browser only.</p>
+  </div>
+  <div class="lbl" id="progLbl">0 of 7 done</div>
+  <div class="bar"><span id="progBar"></span></div>
+  <ol class="build" id="buildList"></ol>
+
+  <div class="open">
+    <h3>Two assumptions to confirm</h3>
+    <ul>
+      <li>The Snowflake schema called <span class="mono">prompt</span> is a placeholder. Replace it with the real name in both env files.</li>
+      <li>For file-based tables, "place the file" is read as: put the file at a landing location, then load it into the staging table. The example uses S3 for the landing step. If your real mechanism is different, only <span class="mono">file_steps.py</span> and its client change.</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+
+  /* ---------- highlighting ---------- */
+  var PYKW = {def:1,'return':1,'import':1,from:1,'for':1,'in':1,'if':1,'class':1,'break':1,'with':1,as:1,None:1,True:1,False:1,raise:1,'not':1,'is':1};
+  function hl(code, lang){
+    var t = esc(code);
+    if(lang === 'yaml'){
+      return t.replace(/(#.*$)|(^\s*(?:- )?[A-Za-z_][\w.]*(?=:))|(^\s*- [\w]+\s*$)|(\b\d+\b)/gm, function(m,c,k,li,n){
+        if(c) return '<span class="c">'+c+'</span>';
+        if(k) return '<span class="k">'+k+'</span>';
+        if(li) return '<span class="s">'+li+'</span>';
+        return '<span class="d">'+n+'</span>';
+      });
+    }
+    if(lang === 'py'){
+      return t.replace(/(#.*$)|("[^"\n]*"|'[^'\n]*')|(@\w+)|\b([A-Za-z_]\w*)\b(?=\()|\b([A-Za-z_]\w*)\b/gm, function(m,c,s,d,fn,w){
+        if(c) return '<span class="c">'+c+'</span>';
+        if(s) return '<span class="s">'+s+'</span>';
+        if(d) return '<span class="d">'+d+'</span>';
+        if(fn) return PYKW[fn] ? '<span class="k">'+fn+'</span>' : '<span class="f">'+fn+'</span>';
+        if(w && PYKW[w]) return '<span class="k">'+w+'</span>';
+        return m;
+      });
+    }
+    return t;
+  }
+
+  var SNIP = {
+registry:
+`STEPS = {}   # task name -> function
+
+def step(name):
+    def wrap(fn):
+        if name in STEPS:
+            raise ValueError(f"Duplicate step name: {name}")
+        STEPS[name] = fn
+        return fn
+    return wrap`,
+stepsinit:
+`# Importing each file runs its @step lines,
+# which is what fills the lookup list.
+from . import dag_steps, schema_steps
+from . import data_steps, file_steps
+from .registry import STEPS`,
+dagsteps:
+`from .registry import step
+from ..models import StepResult
+
+@step("trigger_dag")
+def trigger_dag(ctx):
+    run_id = ctx.airflow.trigger(ctx.dataset.dag_id)
+    ctx.state["run_id"] = run_id   # note for later tasks
+    return StepResult(name="trigger_dag", status="passed")`
+  };
+  document.querySelectorAll('[data-snip]').forEach(function(f){
+    f.querySelector('code').innerHTML = hl(SNIP[f.getAttribute('data-snip')], f.getAttribute('data-lang'));
+  });
+
+  /* ---------- hero flow ---------- */
+  var flowLis = Array.prototype.slice.call(document.querySelectorAll('#flow li'));
+  if(reduce){ flowLis.forEach(function(li){ li.classList.add('done'); }); }
+  else {
+    var fi = 0;
+    (function tick(){
+      flowLis.forEach(function(li, i){ li.classList.toggle('on', i === fi); li.classList.toggle('done', i < fi); });
+      fi = (fi + 1) % (flowLis.length + 1);
+      setTimeout(tick, fi === 0 ? 1400 : 1100);
+    })();
+  }
+
+  /* ---------- glossary ---------- */
+  var GLOSS = [
+    ['Settings files','config/ · YAML','Plain text files holding the values that change: which environment, which tables, which tasks to run.','qat.yaml'],
+    ['Settings blueprint','models.py','A description of what a valid setting looks like. If a required value is missing, the run stops before doing any work.','dag_id must be text'],
+    ['Connector','clients/','A small helper that knows how to talk to one system, such as Airflow or Snowflake.','snowflake.py can run a query'],
+    ['Task','steps/','One job with a name. A task does one thing and reports passed or failed.','validate_row_count'],
+    ['Lookup list','steps/registry.py','A list that pairs each task name with the code that does it. The registry.','"trigger_dag" → trigger_dag()'],
+    ['The backpack','context.py','One bag handed to every task. It holds the settings, the connectors and a notebook for passing values from one task to the next.','a run_id written by one task and read by the next'],
+    ['Task runner','runner.py','The loop that takes task names one by one, finds each on the lookup list, runs it, and stops at the first failure.','trigger_dag, then monitor_dag, then the checks'],
+    ['Task list','pipelines.yaml','A named list of task names. Many tables can share one list.','standard, file_based'],
+    ['Expected answer','reference/','The correct version of something, kept in the repo so real data can be compared to it.','orders.json lists the columns ORDERS_STG must have'],
+    ['Proof','evidence.py','Files attached to the report so a reader can check the result: CSVs, JSON diffs, logs.','counts.csv, schema_diff.json']
+  ];
+  var gl = $('gloss');
+  GLOSS.forEach(function(g){
+    var d = document.createElement('div');
+    d.innerHTML = '<dt>'+esc(g[0])+'<small>'+esc(g[1])+'</small></dt><dd>'+esc(g[2])+' <em>e.g. '+esc(g[3])+'</em></dd>';
+    gl.appendChild(d);
+  });
+
+  /* ---------- stages ---------- */
+  var STAGES = [
+    {t:'Settings', done:'You can load qat + orders and print one merged settings object. A missing key stops with a clear message.'},
+    {t:'Connectors', done:'Each connector makes one harmless call against QAT, such as running select 1 or listing DAGs.'},
+    {t:'Lookup list, backpack, runner', done:'Running a list of two stub tasks prints both names, and stops when you make one fail.'},
+    {t:'Real tasks', done:'run(ctx, ["trigger_dag", "monitor_dag"]) finishes with passed on QAT for one table.'},
+    {t:'Proof and tests', done:'pytest runs one table end to end and the Allure report shows its attachments.'},
+    {t:'Teradata, S3 and file tasks', done:'A file-based table runs from place_source_file through validate_row_count.'},
+    {t:'Start button and packaging', done:'After pip install -e ., the command edw-test list-steps prints every task name.'}
+  ];
+
+  /* ---------- files ---------- */
+  var FILES = [
+    {p:'config/', d:0, st:1, plain:'Settings that change between runs', dir:1,
+      t:'Everything that differs between runs or tables lives here. These are plain text files with no code and no passwords.',
+      r:'If you find yourself editing Python to change a table name or a host, the value belongs in this folder instead.'},
+    {p:'env/qat.yaml', d:1, st:1, plain:'Where QAT runs', lang:'yaml',
+      t:'Hosts, the Snowflake database, and the schema names for QAT. Passwords and tokens are not here.',
+      r:'qat.yaml and uat.yaml must have exactly the same keys. Only the values differ.',
+      code:`environment: QAT
+results_dir: reports/qat
+airflow:
+  base_url: https://airflow-qat.example.com
+snowflake:
+  account: your_account
+  warehouse: WH_QAT
+  database: EDW_QAT
+  schemas:
+    control: CTRL
+    audit: AUDIT
+    staging: STG
+    prompt: PRMPT
+    ground: GRND
+edw:
+  host: teradata-qat.example.com`},
+    {p:'env/uat.yaml', d:1, st:1, plain:'Where UAT runs', lang:'yaml',
+      t:'The same file as qat.yaml with UAT values. Switching environment is then just --env uat.',
+      r:'Copy qat.yaml, then change values only. Never add a key to one file and not the other.',
+      code:`environment: UAT
+results_dir: reports/uat
+airflow:
+  base_url: https://airflow-uat.example.com
+snowflake:
+  database: EDW_UAT
+  warehouse: WH_UAT
+  # ...same keys as qat.yaml`},
+    {p:'pipelines.yaml', d:1, st:1, plain:'Named task lists', lang:'yaml',
+      t:'Each entry is a name and an ordered list of task names. A table picks one by name.',
+      r:'Only names go here. The code for each name lives in steps/.',
+      code:`pipelines:
+  standard:
+    steps:
+      - mark_previous_runs_success
+      - check_dag_not_running
+      - trigger_dag
+      - monitor_dag
+      - validate_schema_staging
+      - validate_schema_ground
+      - validate_row_count
+      - validate_data_movement
+  file_based:
+    steps:
+      - place_source_file
+      - load_file_to_staging
+      - mark_previous_runs_success
+      - check_dag_not_running
+      - trigger_dag
+      - monitor_dag
+      - validate_schema_staging
+      - validate_schema_ground
+      - validate_row_count`},
+    {p:'datasets.yaml', d:1, st:1, plain:'One short entry per table', lang:'yaml',
+      t:'Lists every table to test. Most entries are a few lines and inherit the default task list.',
+      r:'A table that needs a different order can add its own steps: list, which wins over the shared one.',
+      code:`defaults:
+  pipeline: standard
+
+datasets:
+  orders:
+    dag_id: orders_load_dag
+    source:
+      schema: EDW_ORDERS
+      table: ORDERS
+    target:
+      staging_table: ORDERS_STG
+      ground_table: ORDERS_GRND
+  vendor_feed:
+    pipeline: file_based
+    dag_id: vendor_dag
+    file:
+      path: data/vendor_feed.csv`},
+    {p:'reference/schemas/', d:0, st:4, plain:'The expected answers', dir:1,
+      t:'One JSON file per table describing the columns that table should have in Snowflake.',
+      r:'Never edit a file here just to make a failing check pass. A schema change should go through review.'},
+    {p:'orders.json', d:1, st:4, plain:'Expected columns for ORDERS', lang:'py',
+      t:'The schema check compares what Snowflake reports against this file and lists missing columns, extra columns and wrong types.',
+      r:'Keep it in version control so schema changes appear as a visible change in a pull request.',
+      code:`{
+  "table": "ORDERS_STG",
+  "columns": [
+    {"name": "ORDER_ID", "type": "NUMBER", "nullable": false},
+    {"name": "CUSTOMER_ID", "type": "NUMBER", "nullable": false},
+    {"name": "ORDER_TS", "type": "TIMESTAMP_NTZ", "nullable": true}
+  ]
+}`},
+    {p:'src/edw_automation/', d:0, st:1, plain:'All the Python code', dir:1,
+      t:'The code lives in one package folder, so it can later be installed as a module and shared.',
+      r:'Everything below this line is the package. Tests and config sit outside it.'},
+    {p:'models.py', d:1, st:1, plain:'Settings blueprint', lang:'py',
+      t:'Describes what a valid setting and a valid task result look like. When a required value is missing, loading fails here with a clear message.',
+      r:'Write this early. It turns many confusing mid-run errors into one clear error at the start.',
+      code:`from pydantic import BaseModel
+
+class DatasetConfig(BaseModel):
+    name: str
+    dag_id: str               # required
+    pipeline: str = "standard"
+    steps: list[str]
+
+class Settings(BaseModel):
+    env: EnvConfig
+    dataset: DatasetConfig
+
+class StepResult(BaseModel):
+    name: str
+    status: str               # passed, failed or skipped
+    message: str = ""`},
+    {p:'config.py', d:1, st:1, plain:'Settings reader', lang:'py',
+      t:'Reads the YAML files and merges them into one settings object: the env file, the table entry, and the task list.',
+      r:'This is the only place that opens YAML files. Everything else receives the finished settings.',
+      code:`def load_settings(env_name, dataset_name):
+    env = read_yaml(f"config/env/{env_name}.yaml")
+    data = read_yaml("config/datasets.yaml")
+    ds = {**data["defaults"], **data["datasets"][dataset_name]}
+    lists = read_yaml("config/pipelines.yaml")["pipelines"]
+    ds.setdefault("steps", lists[ds["pipeline"]]["steps"])
+    return Settings(env=env, dataset=ds)   # checked by models.py`},
+    {p:'clients/', d:1, st:2, plain:'Connectors to each system', dir:1,
+      t:'One small file per system. Each one hides the details of talking to that system behind a few simple methods.',
+      r:'Only this folder imports vendor drivers such as the Snowflake or Teradata library.'},
+    {p:'base.py', d:2, st:2, plain:'Shared connector rules', lang:'py',
+      t:'The common shape every connector follows: connect, close, and automatic cleanup.',
+      r:'Every new connector extends this class.',
+      code:`class BaseClient:
+    def connect(self): ...
+    def close(self): ...
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, *exc):
+        self.close()`},
+    {p:'airflow.py', d:2, st:2, plain:'Talks to Airflow', lang:'py',
+      t:'Starts a DAG run, waits for it to finish, and marks old runs as success.',
+      r:'Token comes from an environment variable, never from a file.',
+      code:`class AirflowClient(BaseClient):
+    def __init__(self, base_url, token):
+        self.base_url = base_url
+        self.token = token
+
+    def trigger(self, dag_id, conf=None):
+        ...   # starts a run, returns its run id
+
+    def wait(self, run_id, timeout=3600):
+        ...   # polls until success or failed
+
+    def mark_runs_success(self, dag_id):
+        ...`},
+    {p:'snowflake.py', d:2, st:2, plain:'Talks to Snowflake', lang:'py',
+      t:'Runs queries, describes a table, and counts rows.',
+      r:'Pass values as query parameters. Table names come from your own YAML, never from user input.',
+      code:`class SnowflakeClient(BaseClient):
+    def query(self, sql, params=None):
+        ...   # returns rows
+
+    def describe(self, table):
+        return self.query("DESCRIBE TABLE " + table)
+
+    def count(self, table):
+        return self.query("SELECT COUNT(*) FROM " + table)[0][0]`},
+    {p:'teradata.py', d:2, st:6, plain:'Talks to the Teradata EDW', lang:'py',
+      t:'Reads the source side of a comparison, such as the row count in the EDW table.',
+      r:'Added later, once Airflow and Snowflake already work.',
+      code:`class TeradataClient(BaseClient):
+    def query(self, sql, params=None):
+        ...
+
+    def count(self, table):
+        return self.query("SELECT COUNT(*) FROM " + table)[0][0]`},
+    {p:'s3.py', d:2, st:6, plain:'Talks to S3', lang:'py',
+      t:'Uploads and checks files for the file-based tables.',
+      r:'Swap this for a different connector if your landing place is not S3.',
+      code:`class S3Client(BaseClient):
+    def upload(self, local_path, bucket, key):
+        ...
+
+    def exists(self, bucket, key):
+        ...`},
+    {p:'steps/', d:1, st:3, plain:'The tasks and the lookup list', dir:1,
+      t:'Every task is a function in a file here. registry.py holds the lookup list that connects names to those functions.',
+      r:'A task never creates its own connectors. It uses the ones in the backpack.'},
+    {p:'registry.py', d:2, st:3, plain:'The lookup list', lang:'py',
+      t:'Holds the STEPS dictionary and the @step label. This file is tiny and rarely changes. Writing @step("name") above a function adds that name to the list.',
+      r:'This is the file the rest of the design depends on. Write it before any task.',
+      code:SNIP.registry},
+    {p:'__init__.py', d:2, st:3, plain:'Loads every task file', lang:'py',
+      t:'Imports each task file so their @step lines run. Without this import, the names are never added to the lookup list.',
+      r:'Add one import here whenever you create a new task file.',
+      code:SNIP.stepsinit},
+    {p:'dag_steps.py', d:2, st:4, plain:'Tasks that control the DAG', lang:'py',
+      t:'mark_previous_runs_success, check_dag_not_running, trigger_dag and monitor_dag.',
+      r:'Tasks pass values to each other through ctx.state, the notebook in the backpack.',
+      code:`@step("trigger_dag")
+def trigger_dag(ctx):
+    run_id = ctx.airflow.trigger(ctx.dataset.dag_id)
+    ctx.state["run_id"] = run_id
+    return StepResult(name="trigger_dag", status="passed")
+
+@step("monitor_dag")
+def monitor_dag(ctx):
+    result = ctx.airflow.wait(ctx.state["run_id"])
+    status = "passed" if result == "success" else "failed"
+    return StepResult(name="monitor_dag", status=status)`},
+    {p:'schema_steps.py', d:2, st:4, plain:'Tasks that check columns', lang:'py',
+      t:'validate_schema_staging and validate_schema_ground compare the real Snowflake columns to the expected file.',
+      r:'An expected check failure returns "failed". Only a surprise, such as a lost connection, raises an error.',
+      code:`@step("validate_schema_staging")
+def validate_schema_staging(ctx):
+    actual = ctx.snowflake.describe(ctx.dataset.staging_table)
+    expected = load_reference(ctx.dataset.name)
+    diff = compare(actual, expected)   # missing, extra, wrong type
+    return StepResult(name="validate_schema_staging", status=diff.status)`},
+    {p:'data_steps.py', d:2, st:4, plain:'Tasks that check the data', lang:'py',
+      t:'validate_row_count and validate_data_movement compare the source with what landed in Snowflake.',
+      r:'Put the numbers in the message and attach them as proof, so a failure explains itself.',
+      code:`@step("validate_row_count")
+def validate_row_count(ctx):
+    source = ctx.teradata.count(ctx.dataset.source_table)
+    staging = ctx.snowflake.count(ctx.dataset.staging_table)
+    status = "passed" if source == staging else "failed"
+    return StepResult(name="validate_row_count", status=status,
+                      message=f"source={source} staging={staging}")`},
+    {p:'file_steps.py', d:2, st:6, plain:'Tasks for file-based tables', lang:'py',
+      t:'place_source_file and load_file_to_staging, used only by the file_based task list.',
+      r:'The S3 landing here is an assumption. Change this file if your file mechanism differs.',
+      code:`@step("place_source_file")
+def place_source_file(ctx):
+    f = ctx.dataset.file
+    ctx.s3.upload(f.path, f.bucket, f.key)   # assumption: S3 landing
+    return StepResult(name="place_source_file", status="passed")`},
+    {p:'context.py', d:1, st:3, plain:'The backpack', lang:'py',
+      t:'The one bag handed to every task. It holds the settings, the connectors, and a notebook for passing values along.',
+      r:'No global variables. If a task needs something, it comes from the backpack.',
+      code:`@dataclass
+class RunContext:
+    env: EnvConfig
+    dataset: DatasetConfig
+    airflow: AirflowClient
+    snowflake: SnowflakeClient
+    teradata: TeradataClient | None = None
+    s3: S3Client | None = None
+    state: dict = field(default_factory=dict)   # the notebook`},
+    {p:'runner.py', d:1, st:3, plain:'Task runner', lang:'py',
+      t:'Takes a list of task names, checks they all exist, then runs them in order and stops at the first failure.',
+      r:'Make it a plain function so the command line, the tests and a CI job can all call it.',
+      code:`def run(ctx, step_names, from_step=None):
+    if from_step:
+        i = step_names.index(from_step)
+        step_names = step_names[i:]
+
+    unknown = [n for n in step_names if n not in STEPS]
+    if unknown:
+        raise ValueError(f"Unknown steps: {unknown}")
+
+    for name in step_names:
+        with allure.step(name):
+            result = STEPS[name](ctx)
+            attach_evidence(result)
+        if result.status == "failed":
+            break`},
+    {p:'evidence.py', d:1, st:5, plain:'Attaches proof to the report', lang:'py',
+      t:'The single place that attaches files to the Allure report, so every task produces proof in the same way.',
+      r:'Tasks call these helpers instead of calling Allure directly.',
+      code:`import json
+import allure
+
+def attach_json(name, data):
+    allure.attach(json.dumps(data, indent=2), name=name,
+                  attachment_type=allure.attachment_type.JSON)
+
+def attach_csv(name, text):
+    allure.attach(text, name=name,
+                  attachment_type=allure.attachment_type.CSV)`},
+    {p:'cli.py', d:1, st:7, plain:'The start button', lang:'py',
+      t:'The command people and agents type. It reads the flags, builds the backpack and calls the runner.',
+      r:'Last to build, because it only wires together things that already work.',
+      code:`def main():
+    args = parse_args()   # --env --dataset --from-step --run-id
+    ctx = build_context(args.env, args.dataset)
+    if args.run_id:
+        ctx.state["run_id"] = args.run_id
+    run(ctx, ctx.dataset.steps, from_step=args.from_step)`},
+    {p:'tests/', d:0, st:5, plain:'pytest entry points', dir:1,
+      t:'Tests do not talk to Snowflake or Airflow themselves. They build the backpack and call the runner.',
+      r:'One test function can cover every table in datasets.yaml.'},
+    {p:'conftest.py', d:1, st:5, plain:'Test setup', lang:'py',
+      t:'Creates one test case per table listed in datasets.yaml, and builds the backpack for each.',
+      r:'Adding a table adds a test case without writing a new test.',
+      code:`def pytest_addoption(parser):
+    parser.addoption("--env", default="qat")
+
+def pytest_generate_tests(metafunc):
+    if "dataset_name" in metafunc.fixturenames:
+        metafunc.parametrize("dataset_name", list_datasets())
+
+@pytest.fixture
+def ctx(request, dataset_name):
+    return build_context(request.config.getoption("--env"), dataset_name)`},
+    {p:'test_dataset_flow.py', d:1, st:5, plain:'The one test', lang:'py',
+      t:'Runs the full task list for each table.',
+      r:'Keep it this short. The logic belongs in the tasks.',
+      code:`def test_dataset_flow(ctx):
+    run(ctx, ctx.dataset.steps)`},
+    {p:'reports/', d:0, st:5, plain:'Results, not committed', dir:1,
+      t:'The Allure results and the generated HTML report for each environment land here.',
+      r:'Add this folder to .gitignore.'},
+    {p:'pyproject.toml', d:0, st:7, plain:'Makes it installable', lang:'py',
+      t:'Declares the dependencies and the edw-test command, so the team can install the whole thing with one line.',
+      r:'This is what turns the folder into a module.',
+      code:`[project]
+name = "edw-automation"
+dependencies = ["pytest", "allure-pytest", "pydantic", "pyyaml"]
+
+[project.scripts]
+edw-test = "edw_automation.cli:main"`},
+    {p:'AGENTS.md', d:0, st:7, plain:'Short rules for Copilot or Devin', lang:'text',
+      t:'A one-page rules file for AI coding agents. It points them at ARCHITECTURE.md and lists what they must never do.',
+      r:'Keep it short. Agents follow short rules more reliably than long ones.',
+      code:`# Rules for agents
+Read ARCHITECTURE.md first.
+
+- New table: edit config/datasets.yaml, add a reference schema.
+- New check: add one @step function in steps/.
+- Never hardcode hosts, schemas or passwords.
+- Only run against qat or uat.`},
+    {p:'ARCHITECTURE.md', d:0, st:7, plain:'The full design for agents', lang:'text',
+      t:'The longer design document: patterns, contracts, extension recipes, and a definition of done.',
+      r:'Update it whenever a rule changes, so agents never work from stale instructions.',
+      code:`Sections:
+1. Purpose and tech stack
+2. Repository layout
+3. Patterns used and where
+4. Core contracts (step, result, backpack)
+5. Configuration rules
+6. How to extend
+7. Do and do-not rules
+8. Definition of done`}
+  ];
+
+  var treeEl = $('tree'), detEl = $('detail'), rowEls = [], curFile = 0, curStage = 0;
+  function showFile(i, animate){
+    curFile = i;
+    var f = FILES[i];
+    rowEls.forEach(function(b, j){ b.setAttribute('aria-pressed', j === i ? 'true' : 'false'); });
+    var h = '<div class="lbl">'+(f.dir ? 'Folder' : 'File')+' · written in stage '+f.st+'</div>' +
+      '<h3>'+esc(f.plain)+'</h3>' +
+      '<div class="where">'+esc(pathOf(i))+'</div>' +
+      '<p>'+esc(f.t)+'</p>';
+    if(f.code){ h += '<figure class="code"><figcaption>Example content</figcaption><pre><code>'+hl(f.code, f.lang)+'</code></pre></figure>'; }
+    h += '<p class="rule">'+esc(f.r)+'</p>';
+    detEl.innerHTML = h;
+    if(animate && !reduce){ detEl.classList.remove('swap'); void detEl.offsetWidth; detEl.classList.add('swap'); }
+  }
+  function pathOf(i){
+    var f = FILES[i], parts = [f.p], d = f.d;
+    for(var j = i - 1; j >= 0 && d > 0; j--){
+      if(FILES[j].d < d){ parts.unshift(FILES[j].p.replace(/\/$/, '')); d = FILES[j].d; }
+    }
+    return parts.join('/').replace(/\/\//g, '/');
+  }
+  FILES.forEach(function(f, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<span class="stg">'+f.st+'</span><span class="txt" style="margin-left:'+(f.d * 16)+'px"><span class="path'+(f.dir ? ' dir' : '')+'">'+esc(f.p)+'</span><span class="plain">'+esc(f.plain)+'</span></span>';
+    b.addEventListener('click', function(){ showFile(i, true); });
+    treeEl.appendChild(b); rowEls.push(b);
+  });
+  var sb = $('stagebar');
+  function setStage(n){
+    curStage = n;
+    Array.prototype.forEach.call(sb.children, function(b, j){ b.setAttribute('aria-pressed', j === n ? 'true' : 'false'); });
+    rowEls.forEach(function(b, i){
+      var on = n === 0 || FILES[i].st === n;
+      b.classList.toggle('dim', !on);
+      b.classList.toggle('hit', n !== 0 && on);
+    });
+    var hint = $('stagehint');
+    if(n === 0){ hint.innerHTML = '<strong>All files.</strong> Choose a stage to see what you write at that point and how to know it works.'; }
+    else { var s = STAGES[n - 1]; hint.innerHTML = '<strong>Stage '+n+': '+esc(s.t)+'.</strong> You are done when: '+esc(s.done); }
+  }
+  ['All files'].concat(STAGES.map(function(s, i){ return (i + 1) + ' · ' + s.t; })).forEach(function(lbl, n){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = n === 0 ? lbl : 'Stage ' + lbl;
+    b.title = lbl;
+    b.setAttribute('aria-pressed', n === 0 ? 'true' : 'false');
+    b.addEventListener('click', function(){ setStage(n); });
+    sb.appendChild(b);
+  });
+  showFile(0, false); setStage(0);
+  var regIdx = 0; FILES.forEach(function(f, i){ if(f.p === 'registry.py') regIdx = i; });
+  showFile(regIdx, false);
+
+  /* ---------- one run, step by step ---------- */
+  var MOM = [
+    {t:'You press the start button', files:['cli.py'], say:'You type one command. It names the environment and the table. Nothing else is needed.',
+     cap:'Terminal', lang:'text', code:'$ edw-test run --env qat --dataset orders',
+     bag:[], ev:[]},
+    {t:'The settings are read and checked', files:['config.py','models.py','qat.yaml','datasets.yaml','pipelines.yaml'],
+     say:'The settings reader opens the QAT file, the orders entry, and the standard task list, and merges them. The blueprint checks every required value. If orders had no dag_id, the run would stop here with a clear message and nothing would have been touched.',
+     cap:'Merged result', lang:'yaml', code:'environment: QAT\ndag_id: orders_load_dag\npipeline: standard\nsteps: 8 task names',
+     bag:['settings.environment = QAT','settings.dag_id = orders_load_dag','settings.steps = 8 task names (standard)'], ev:[]},
+    {t:'The connectors are opened', files:['clients/airflow.py','clients/snowflake.py','clients/teradata.py'],
+     say:'One connector is created for each system this table needs, using the hosts from the QAT file and passwords from environment variables.',
+     cap:'steps in code', lang:'py', code:'airflow = AirflowClient(env.airflow.base_url, token)\nsnowflake = SnowflakeClient(env.snowflake)\nteradata = TeradataClient(env.edw)',
+     bag:['airflow = connected (airflow-qat)','snowflake = connected (EDW_QAT)','teradata = connected'], ev:[]},
+    {t:'The backpack is packed', files:['context.py'],
+     say:'Settings and connectors go into one bag. A notebook, called state, starts empty. Tasks will write notes in it for the tasks after them.',
+     cap:'code', lang:'py', code:'ctx = RunContext(env, dataset, airflow,\n                 snowflake, teradata, state={})',
+     bag:['state = {}   (empty notebook)'], ev:[]},
+    {t:'Every name is checked against the lookup list', files:['runner.py','steps/registry.py'],
+     say:'Before any task runs, the runner confirms all eight names exist on the lookup list. A typo such as trigger_dagg stops the run right here, so you never get a half-finished run.',
+     cap:'code', lang:'py', code:'unknown = [n for n in names if n not in STEPS]\n# an empty list means every name was found',
+     bag:['names checked: 8 of 8 found'], ev:[]},
+    {t:'Tasks 1 and 2: clear the way', files:['steps/dag_steps.py'],
+     say:'Old runs that never finished are marked as success so they cannot block this one. Then the task confirms nothing is running right now. Each task looks up its function, runs it, and attaches its proof.',
+     cap:'code', lang:'py', code:'STEPS["check_dag_not_running"](ctx)\n# -> StepResult(status="passed")',
+     bag:[], ev:['ok:mark_previous_runs_success','ok:check_dag_not_running']},
+    {t:'Task 3: start the DAG and leave a note', files:['steps/dag_steps.py','clients/airflow.py'],
+     say:'The trigger task starts the DAG run in Airflow. It writes the run id in the notebook, because a later task will need it.',
+     cap:'code', lang:'py', code:'run_id = ctx.airflow.trigger("orders_load_dag")\nctx.state["run_id"] = run_id',
+     bag:['state.run_id = "manual__2026-10-20T21:42:07"'], ev:['ok:trigger_dag']},
+    {t:'Task 4: wait, using the note', files:['steps/dag_steps.py'],
+     say:'The monitor task reads the run id from the notebook and waits until Airflow reports a result. This is why starting from monitor_dag needs a run id: the note from task 3 would be missing.',
+     cap:'code', lang:'py', code:'ctx.airflow.wait(ctx.state["run_id"])\n# reads the note left by the previous task',
+     bag:['state.dag_state = "success"'], ev:['ok:monitor_dag']},
+    {t:'Tasks 5 to 8: check the result', files:['steps/schema_steps.py','steps/data_steps.py','reference/schemas/orders.json'],
+     say:'The schema tasks compare the real Snowflake columns to the expected file. The data tasks compare row counts and movement from Teradata. If counts differed, the task would return failed, the runner would stop, and the report would show it in red with the numbers attached.',
+     cap:'code', lang:'py', code:'diff = compare(actual_columns, expected_columns)\nstatus = "passed" if source == staging else "failed"',
+     bag:[], ev:['ok:validate_schema_staging  + schema_diff.json','ok:validate_schema_ground','ok:validate_row_count  + counts.csv','ok:validate_data_movement']},
+    {t:'The report is ready', files:['evidence.py','reports/'],
+     say:'Every task attached its proof as it ran. One command turns those results into an HTML page. Share that page, and the team can see each task, its status and its attachments without running anything.',
+     cap:'Terminal', lang:'text', code:'$ allure generate reports/qat/allure-results \\\n    -o reports/qat/html --clean',
+     bag:[], ev:['ok:report written to reports/qat/html']}
+  ];
+  var mi = 0, mTimer = null;
+  var dotsEl = $('dots');
+  MOM.forEach(function(m, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = i + 1; b.setAttribute('aria-label', 'Moment ' + (i + 1) + ': ' + m.t);
+    b.addEventListener('click', function(){ stopPlay(); goM(i); });
+    dotsEl.appendChild(b);
+  });
+  function goM(i){
+    mi = Math.max(0, Math.min(MOM.length - 1, i));
+    var m = MOM[mi];
+    Array.prototype.forEach.call(dotsEl.children, function(b, j){ b.className = j === mi ? 'now' : (j < mi ? 'past' : ''); });
+    $('momLbl').textContent = 'Moment ' + (mi + 1) + ' of ' + MOM.length;
+    $('momTitle').textContent = m.t;
+    $('momFiles').innerHTML = m.files.map(function(f){ return '<span>'+esc(f)+'</span>'; }).join('');
+    $('momSay').textContent = m.say;
+    $('momCap').textContent = m.cap === 'Terminal' ? 'Terminal' : 'What it looks like';
+    $('momCode').innerHTML = m.lang === 'text' ? esc(m.code) : hl(m.code, m.lang);
+    var bag = [], ev = [];
+    for(var k = 0; k <= mi; k++){ bag = bag.concat(MOM[k].bag.map(function(x){ return {x:x, n:k === mi}; })); ev = ev.concat(MOM[k].ev.map(function(x){ return {x:x, n:k === mi}; })); }
+    $('bagBox').innerHTML = bag.length ? bag.map(function(b){ return '<div'+(b.n ? '' : ' style="animation:none"')+'>'+esc(b.x)+'</div>'; }).join('') : '<span class="empty">Not packed yet.</span>';
+    $('evBox').innerHTML = ev.length ? ev.map(function(e){
+      var t = e.x.replace(/^ok:/, '');
+      return '<div class="ok"'+(e.n ? '' : ' style="animation:none"')+'>✓ '+esc(t)+'</div>';
+    }).join('') : '<span class="empty">Nothing yet.</span>';
+    $('prevM').disabled = mi === 0;
+    $('nextM').disabled = mi === MOM.length - 1;
+  }
+  function stopPlay(){ if(mTimer){ clearInterval(mTimer); mTimer = null; } $('playM').textContent = 'Play'; }
+  $('prevM').addEventListener('click', function(){ stopPlay(); goM(mi - 1); });
+  $('nextM').addEventListener('click', function(){ stopPlay(); goM(mi + 1); });
+  $('playM').addEventListener('click', function(){
+    if(mTimer){ stopPlay(); return; }
+    if(mi >= MOM.length - 1) goM(0);
+    $('playM').textContent = 'Pause';
+    mTimer = setInterval(function(){
+      if(mi >= MOM.length - 1){ stopPlay(); return; }
+      goM(mi + 1);
+    }, 2600);
+  });
+  goM(0);
+
+  /* ---------- where does it go ---------- */
+  var GOES = [
+    {q:'Test a new table', files:['config/datasets.yaml','reference/schemas/<table>.json'], say:'Add a short entry for the table and a file listing its expected columns. No Python changes.', code:`  customers:
+    dag_id: cust_load_dag
+    source:
+      schema: EDW_CUST
+      table: CUSTOMER`, lang:'yaml'},
+    {q:'Add a new check', files:['steps/*_steps.py','config/pipelines.yaml'], say:'Write one function with an @step label, then add its name to the task list that should use it. If it is a new file, also import it in steps/__init__.py.', code:`@step("validate_null_keys")
+def validate_null_keys(ctx):
+    n = ctx.snowflake.count_nulls(ctx.dataset.staging_table, "ORDER_ID")
+    return StepResult(name="validate_null_keys",
+                      status="passed" if n == 0 else "failed")`, lang:'py'},
+    {q:'Give one table a different task order', files:['config/datasets.yaml'], say:'Give that table its own steps list. It wins over the shared list. Nothing else changes.', code:`  customers:
+    dag_id: cust_load_dag
+    steps:
+      - trigger_dag
+      - monitor_dag
+      - validate_row_count`, lang:'yaml'},
+    {q:'Give a group of tables a different flow', files:['config/pipelines.yaml','config/datasets.yaml'], say:'Add a new named list, then let each table in the group name it.', code:`# pipelines.yaml
+  reload_only:
+    steps:
+      - trigger_dag
+      - monitor_dag
+
+# datasets.yaml
+  inventory:
+    pipeline: reload_only`, lang:'yaml'},
+    {q:'Connect to a new system', files:['clients/<system>.py','config/env/*.yaml','context.py'], say:'Write a connector that extends the base class, add its host to each env file, and add one field to the backpack.', code:`class SftpClient(BaseClient):
+    def upload(self, local_path, remote_path):
+        ...`, lang:'py'},
+    {q:'Add another environment', files:['config/env/<name>.yaml'], say:'Copy an existing env file and change the values only. Then use --env <name>.', code:`edw-test run --env uat --dataset orders`, lang:'text'},
+    {q:'Store a password or token', files:['Environment variable'], say:'Read it inside the connector from an environment variable or your secret store. It must never appear in a YAML file, in code, or in a log.', code:`token = os.environ["AIRFLOW_TOKEN"]`, lang:'py'},
+    {q:'Change what the report attaches', files:['evidence.py'], say:'All attachments go through this file, so one change here updates every task.', code:`def attach_text(name, text):
+    allure.attach(text, name=name,
+                  attachment_type=allure.attachment_type.TEXT)`, lang:'py'},
+    {q:'Start in the middle of a run', files:['No file changes'], say:'Use the command flag. Pass a run id if you skip the trigger task but still need to monitor it.', code:`edw-test run --env qat --dataset orders \\
+    --from-step monitor_dag --run-id manual__2026-10-20T21:30:00`, lang:'text'}
+  ];
+  var selGoes = $('selGoes');
+  GOES.forEach(function(g, i){ var o = document.createElement('option'); o.value = i; o.textContent = g.q; selGoes.appendChild(o); });
+  function showGoes(){
+    var g = GOES[+selGoes.value];
+    $('goesAns').innerHTML = '<div class="lbl">Files involved</div><ul>' + g.files.map(function(f){ return '<li class="mono" style="font-size:13px">'+esc(f)+'</li>'; }).join('') + '</ul><p>'+esc(g.say)+'</p><figure class="code"><figcaption>Example</figcaption><pre><code>'+hl(g.code, g.lang)+'</code></pre></figure>';
+  }
+  selGoes.addEventListener('change', showGoes); showGoes();
+
+  /* ---------- lookup list animation ---------- */
+  var RSTEPS = [
+    {n:'mark_previous_runs_success', f:'dag_steps.py', c:'@step("mark_previous_runs_success")\ndef mark_previous_runs_success(ctx):\n    ctx.airflow.mark_runs_success(ctx.dataset.dag_id)\n    return StepResult(name="mark_previous_runs_success", status="passed")'},
+    {n:'check_dag_not_running', f:'dag_steps.py', c:'@step("check_dag_not_running")\ndef check_dag_not_running(ctx):\n    busy = ctx.airflow.has_active_run(ctx.dataset.dag_id)\n    status = "failed" if busy else "passed"\n    return StepResult(name="check_dag_not_running", status=status)'},
+    {n:'trigger_dag', f:'dag_steps.py', c:'@step("trigger_dag")\ndef trigger_dag(ctx):\n    run_id = ctx.airflow.trigger(ctx.dataset.dag_id)\n    ctx.state["run_id"] = run_id\n    return StepResult(name="trigger_dag", status="passed")'},
+    {n:'monitor_dag', f:'dag_steps.py', c:'@step("monitor_dag")\ndef monitor_dag(ctx):\n    result = ctx.airflow.wait(ctx.state["run_id"])\n    status = "passed" if result == "success" else "failed"\n    return StepResult(name="monitor_dag", status=status)'},
+    {n:'validate_schema_staging', f:'schema_steps.py', c:'@step("validate_schema_staging")\ndef validate_schema_staging(ctx):\n    actual = ctx.snowflake.describe(ctx.dataset.staging_table)\n    diff = compare(actual, load_reference(ctx.dataset.name))\n    return StepResult(name="validate_schema_staging", status=diff.status)'},
+    {n:'validate_row_count', f:'data_steps.py', c:'@step("validate_row_count")\ndef validate_row_count(ctx):\n    src = ctx.teradata.count(ctx.dataset.source_table)\n    tgt = ctx.snowflake.count(ctx.dataset.staging_table)\n    status = "passed" if src == tgt else "failed"\n    return StepResult(name="validate_row_count", status=status)'}
+  ];
+  var yamlCol = $('yamlCol'), regCol = $('regCol'), fnBox = $('fnBox'), fnCode = $('fnCode'), fnCap = $('fnCap');
+  var yRows = [], rRows = [];
+  RSTEPS.forEach(function(s, i){
+    var y = document.createElement('button');
+    y.type = 'button'; y.className = 'row'; y.innerHTML = '<span style="color:var(--muted)">-</span> '+esc(s.n);
+    y.addEventListener('click', function(){ paused = true; $('playBtn').textContent = 'Play'; idx = i; stage = 2; paint(); });
+    yamlCol.appendChild(y); yRows.push(y);
+    var r = document.createElement('div');
+    r.className = 'row static'; r.innerHTML = '<span>"'+esc(s.n)+'"</span><span class="to">→</span><span>function</span>';
+    regCol.appendChild(r); rRows.push(r);
+  });
+  var idx = 2, stage = 2, paused = !!reduce;
+  function paint(){
+    var s = RSTEPS[idx];
+    yRows.forEach(function(r, i){ r.classList.toggle('hot', i === idx && stage >= 0); });
+    rRows.forEach(function(r, i){ r.classList.toggle('hot', i === idx && stage >= 1); });
+    fnBox.classList.toggle('hot', stage >= 2);
+    fnCode.innerHTML = hl(s.c, 'py');
+    fnCap.textContent = 'steps/' + s.f;
+    $('lookupNote').textContent = stage < 1 ? 'The runner reads "'+s.n+'" from the task list.' : stage < 2 ? 'STEPS["'+s.n+'"] gives back the function.' : 'The runner calls it and hands it the backpack.';
+  }
+  paint();
+  if(reduce){ $('playBtn').textContent = 'Next'; paused = true; }
+  $('playBtn').addEventListener('click', function(){
+    if(reduce){ stage = (stage + 1) % 3; if(stage === 0) idx = (idx + 1) % RSTEPS.length; paint(); return; }
+    paused = !paused; $('playBtn').textContent = paused ? 'Play' : 'Pause';
+  });
+  if(!reduce){
+    setInterval(function(){
+      if(paused) return;
+      stage++;
+      if(stage > 2){ stage = 0; idx = (idx + 1) % RSTEPS.length; }
+      paint();
+    }, 900);
+  }
+
+  /* ---------- task lists ---------- */
+  var PIPES = {
+    standard: ['mark_previous_runs_success','check_dag_not_running','trigger_dag','monitor_dag','validate_schema_staging','validate_schema_ground','validate_row_count','validate_data_movement'],
+    file_based: ['place_source_file','load_file_to_staging','mark_previous_runs_success','check_dag_not_running','trigger_dag','monitor_dag','validate_schema_staging','validate_schema_ground','validate_row_count']
+  };
+  var NEWSTEPS = {place_source_file:1, load_file_to_staging:1};
+  var g50 = $('grid50');
+  for(var q = 0; q < 50; q++){ var cell = document.createElement('i'); if(q >= 40) cell.className = 'file'; g50.appendChild(cell); }
+  function showPipe(p){
+    document.querySelectorAll('.tabs button').forEach(function(b){ b.setAttribute('aria-pressed', b.getAttribute('data-pipe') === p ? 'true' : 'false'); });
+    var ch = $('chips'); ch.innerHTML = '';
+    PIPES[p].forEach(function(n, i){
+      var li = document.createElement('li');
+      li.style.animationDelay = (i * 45) + 'ms';
+      if(NEWSTEPS[n]) li.className = 'new';
+      li.innerHTML = '<span>'+esc(n)+'</span>' + (NEWSTEPS[n] ? '<span class="badge">file tables only</span>' : '');
+      ch.appendChild(li);
+    });
+    Array.prototype.forEach.call(g50.children, function(c, i){ c.classList.toggle('dim', (p === 'file_based') !== (i >= 40)); });
+  }
+  document.querySelectorAll('.tabs button').forEach(function(b){ b.addEventListener('click', function(){ showPipe(b.getAttribute('data-pipe')); }); });
+  showPipe('standard');
+
+  /* ---------- tables used by simulator and config ---------- */
+  var DS = {
+    orders:{pipe:'standard', dag:'orders_load_dag', stg:'ORDERS_STG', grnd:'ORDERS_GRND'},
+    customers:{pipe:'standard', dag:'cust_load_dag', stg:'CUSTOMER_STG', grnd:'CUSTOMER_GRND'},
+    vendor_feed:{pipe:'file_based', dag:'vendor_dag', stg:'VENDOR_FEED_STG', grnd:'VENDOR_FEED_GRND'}
+  };
+  ['selDs','cfgDs'].forEach(function(id){
+    var s = $(id);
+    Object.keys(DS).forEach(function(k){ var o = document.createElement('option'); o.value = k; o.textContent = k + '  (' + DS[k].pipe + ')'; s.appendChild(o); });
+  });
+
+  /* ---------- run simulator ---------- */
+  var statuses = [], runToken = 0, running = false;
+  function curSteps(){ return PIPES[DS[$('selDs').value].pipe]; }
+  function fromIndex(){ var i = curSteps().indexOf($('selFrom').value); return i < 0 ? 0 : i; }
+  function needsRunId(){ var s = curSteps(), f = fromIndex(); return f > s.indexOf('trigger_dag') && f <= s.indexOf('monitor_dag'); }
+  function fillFrom(){
+    var s = curSteps(), sel = $('selFrom'), prev = sel.value;
+    sel.innerHTML = '';
+    s.forEach(function(n){ var o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+    sel.value = s.indexOf(prev) >= 0 ? prev : s[0];
+  }
+  function fillFail(){
+    var s = curSteps(), f = fromIndex(), sel = $('selFail'), prev = sel.value;
+    sel.innerHTML = '<option value="">none, all tasks pass</option>';
+    s.slice(f).forEach(function(n){ var o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+    sel.value = Array.prototype.some.call(sel.options, function(o){ return o.value === prev; }) ? prev : '';
+  }
+  function cmdText(){
+    var c = 'edw-test run --env ' + $('selEnv').value + ' --dataset ' + $('selDs').value;
+    if(fromIndex() > 0) c += ' --from-step ' + $('selFrom').value;
+    if(needsRunId()) c += ' --run-id ' + ($('runId').value.trim() || '<run id>');
+    return c;
+  }
+  function validate(){
+    var msg = $('runMsg'), need = needsRunId();
+    $('runIdField').hidden = !need;
+    var bad = need && !$('runId').value.trim();
+    msg.hidden = true;
+    if(bad){ msg.hidden = false; msg.textContent = 'trigger_dag is skipped but monitor_dag still runs. Enter the run id to monitor.'; }
+    else if(fromIndex() > 0 && DS[$('selDs').value].pipe === 'file_based' && fromIndex() > curSteps().indexOf('load_file_to_staging')){
+      msg.hidden = false; msg.textContent = 'This start point assumes the file is already loaded into staging.';
+    }
+    $('runBtn').disabled = bad || running;
+    $('cmdOut').innerHTML = '<span class="c">$ </span>' + esc(cmdText());
+  }
+  function renderSteps(){
+    var s = curSteps(), ol = $('stepList'); ol.innerHTML = '';
+    var labels = {pending:'waiting', skipped:'skipped', running:'running', passed:'passed', failed:'failed', notrun:'not run'};
+    s.forEach(function(n, i){
+      var st = statuses[i] || 'pending';
+      var li = document.createElement('li'); li.className = st;
+      li.innerHTML = '<span class="n">'+(i+1)+'</span><span class="nm">'+esc(n)+'</span><span class="pill">'+labels[st]+'</span>';
+      ol.appendChild(li);
+    });
+  }
+  function previewStatuses(){ var f = fromIndex(); statuses = curSteps().map(function(n, i){ return i < f ? 'skipped' : 'pending'; }); renderSteps(); }
+  function setState(lines){
+    var box = $('stateBox');
+    if(!lines.length){ box.innerHTML = '<span style="color:var(--muted)">Empty until tasks write to it.</span>'; return; }
+    box.innerHTML = lines.map(function(l){ return '<div>'+esc(l)+'</div>'; }).join('');
+  }
+  async function runSim(){
+    if(running) return;
+    running = true; validate();
+    var token = ++runToken;
+    var s = curSteps(), f = fromIndex(), failAt = $('selFail').value, st = [];
+    previewStatuses(); setState([]);
+    if(needsRunId()){ st.push('run_id = "' + $('runId').value.trim() + '"  (from --run-id)'); setState(st); }
+    var stopped = false;
+    for(var i = f; i < s.length; i++){
+      if(token !== runToken) return;
+      if(stopped){ statuses[i] = 'notrun'; continue; }
+      statuses[i] = 'running'; renderSteps();
+      await sleep(reduce ? 60 : 520);
+      if(token !== runToken) return;
+      if(s[i] === failAt){ statuses[i] = 'failed'; stopped = true; }
+      else {
+        statuses[i] = 'passed';
+        if(s[i] === 'trigger_dag') st.push('run_id = "manual__2026-10-20T21:42:07"');
+        if(s[i] === 'monitor_dag') st.push('dag_state = "success"');
+        if(s[i] === 'load_file_to_staging') st.push('staged_file = "vendor_feed.csv"');
+        if(s[i] === 'validate_row_count') st.push('counts = source 1204518, staging 1204518');
+        setState(st);
+      }
+      renderSteps();
+    }
+    if(token !== runToken) return;
+    renderSteps(); running = false; validate();
+  }
+  function resetSim(){ runToken++; running = false; previewStatuses(); setState([]); validate(); }
+  function onSimChange(ev){ if(ev && ev.target && ev.target.id === 'selDs'){ fillFrom(); } fillFail(); resetSim(); }
+  $('selDs').addEventListener('change', onSimChange);
+  $('selFrom').addEventListener('change', onSimChange);
+  $('selEnv').addEventListener('change', validate);
+  $('selFail').addEventListener('change', validate);
+  $('runId').addEventListener('input', validate);
+  $('runBtn').addEventListener('click', runSim);
+  $('resetBtn').addEventListener('click', resetSim);
+  $('selDs').value = 'orders';
+  fillFrom(); $('selFrom').value = 'monitor_dag'; fillFail(); previewStatuses(); validate();
+
+  /* ---------- settings merge ---------- */
+  var SRC = {env:['env file','env'], pipe:['task list','pipe'], ds:['table entry','ds'], cli:['command flag','cli'], der:['worked out','der']};
+  var prevCfg = {};
+  function cfgRows(){
+    var env = $('cfgEnv').value, E = env.toUpperCase(), key = $('cfgDs').value, d = DS[key], db = 'EDW_' + E;
+    var rows = [
+      ['environment', E, 'cli'],
+      ['airflow.base_url', 'https://airflow-' + env + '.example.com', 'env'],
+      ['snowflake.database', db, 'env'],
+      ['snowflake.schemas.staging', 'STG', 'env'],
+      ['snowflake.schemas.ground', 'GRND', 'env'],
+      ['pipeline', d.pipe, 'ds'],
+      ['steps', d.pipe + ' (' + PIPES[d.pipe].length + ' tasks)', 'pipe'],
+      ['dag_id', d.dag, 'ds'],
+      ['target.staging_table', db + '.STG.' + d.stg, 'der'],
+      ['target.ground_table', db + '.GRND.' + d.grnd, 'der']
+    ];
+    if($('cfgFrom').checked) rows.push(['from_step', 'validate_schema_staging', 'cli']);
+    return rows;
+  }
+  function renderCfg(){
+    var body = $('cfgBody'), rows = cfgRows(), next = {};
+    body.innerHTML = '';
+    rows.forEach(function(r){
+      var tr = document.createElement('tr');
+      next[r[0]] = r[1];
+      if(prevCfg[r[0]] !== r[1]) tr.className = 'flash';
+      tr.innerHTML = '<td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td><td><span class="src '+SRC[r[2]][1]+'">'+SRC[r[2]][0]+'</span></td>';
+      body.appendChild(tr);
+    });
+    prevCfg = next;
+  }
+  ['cfgEnv','cfgDs','cfgFrom'].forEach(function(id){ $(id).addEventListener('change', renderCfg); });
+  $('cfgDs').value = 'orders';
+  renderCfg();
+
+  /* ---------- build order ---------- */
+  var bl = $('buildList'), saved = [];
+  try { saved = JSON.parse(localStorage.getItem('edw-build-v2') || '[]'); } catch(e){ saved = []; }
+  function progress(){
+    var n = bl.querySelectorAll('input:checked').length;
+    $('progLbl').textContent = n + ' of ' + STAGES.length + ' done';
+    $('progBar').style.width = (n / STAGES.length * 100) + '%';
+    var ids = [];
+    bl.querySelectorAll('input').forEach(function(c, i){ if(c.checked) ids.push(i); });
+    try { localStorage.setItem('edw-build-v2', JSON.stringify(ids)); } catch(e){}
+  }
+  STAGES.forEach(function(s, i){
+    var files = FILES.filter(function(f){ return f.st === i + 1 && !f.dir; }).map(function(f){ return f.p; });
+    var li = document.createElement('li');
+    var on = saved.indexOf(i) >= 0;
+    li.className = on ? 'dn' : '';
+    li.innerHTML = '<label for="b'+i+'"><input type="checkbox" id="b'+i+'"'+(on ? ' checked' : '')+'><span><strong>'+esc(s.t)+'</strong><span class="t"><b>Files:</b> '+esc(files.join(', '))+'</span><span class="t"><b>Done when:</b> '+esc(s.done)+'</span></span></label>';
+    li.querySelector('input').addEventListener('change', function(ev){ li.classList.toggle('dn', ev.target.checked); progress(); });
+    bl.appendChild(li);
+  });
+  progress();
+})();
+</script>
+
+</body></html>
